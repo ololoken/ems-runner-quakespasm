@@ -1,0 +1,56 @@
+name: build and deploy quakespasm-wasm
+on: 
+  push:
+    branches:
+      - main
+jobs:
+
+  build-quakespasm-emscripten-module:
+    runs-on: ubuntu-latest
+    container: emscripten/latest
+    steps:
+      - name: Checkout quakespasm
+        uses: actions/checkout@v4
+        with:
+          repository: ololoken/quakespasm
+          ref: refs/heads/master
+      - name: Build wasm module
+        #note: my lazy bones do not allow me to add build step for gl4es (https://github.com/ptitSeb/gl4es) lib
+        #using prebuild library (v1.1.6 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNOX11=ON -DNOEGL=ON -DSTATICLIB=ON)
+        run: |
+          cd Quake
+          curl -sSL "https://turch.in/quakespasm/deps.zip"
+          unzip deps.zip
+          emmake make -f Makefile.emscripten -j "$(nproc)"
+          cd ..
+          mkdir -p quakespasm-emscripten-module
+          cp Quake/quakespasm.wasm quakespasm-emscripten-module
+          cp Quake/quakespasm.js quakespasm-emscripten-module
+      - name: Store quakespasm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quakespasm-emscripten-module
+          path: quakespasm-emscripten-module
+
+  build-quakespasm-ems-launcher:
+    runs-on: ubuntu-latest
+    needs: build-quakespasm-emscripten-module
+    steps:
+      - name: Checkout launcher
+        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: quakespasm-emscripten-module
+          path: src/assets/module/
+      - name: Install and Build
+        #here first step we download data archive with preinstalled `travail` mod
+        run: |
+          curl -sSL "https://turch.in/quakespasm/data.zip"
+          npm install
+          npm run build
+      # todo: deploy dist folder to your server
+      #- name: Deploy 🚀
+      #  uses: JamesIves/github-pages-deploy-action@v4
+      #  with:
+      #    branch: gh-pages-demo
+      #    folder: dist
