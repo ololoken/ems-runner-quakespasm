@@ -19,7 +19,7 @@ jobs:
         #using prebuild library (v1.1.6 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNOX11=ON -DNOEGL=ON -DSTATICLIB=ON)
         run: |
           cd Quake
-          curl -sSL "https://turch.in/quakespasm/deps.zip"
+          curl -O "https://turch.in/quakespasm/deps.zip"
           unzip deps.zip
           emmake make -f Makefile.emscripten -j "$(nproc)"
           cd ..
@@ -45,7 +45,7 @@ jobs:
       - name: Install and Build
         #here first step we download data archive with preinstalled `travail` mod
         run: |
-          curl -sSL "https://turch.in/quakespasm/data.zip" -O --output-dir src/assets/module
+          curl -O --output-dir src/assets/module "https://turch.in/quakespasm/data.zip"
           npm install
           npm run build
       # todo: deploy dist folder to your server
