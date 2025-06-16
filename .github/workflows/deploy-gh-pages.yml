@@ -7,7 +7,7 @@ jobs:
 
   build-quakespasm-emscripten-module:
     runs-on: ubuntu-latest
-    container: emscripten/latest
+    container: emscripten/emsdk:latest
     steps:
       - name: Checkout quakespasm
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
       - name: Install and Build
         #here first step we download data archive with preinstalled `travail` mod
         run: |
-          curl -sSL "https://turch.in/quakespasm/data.zip"
+          curl -sSL "https://turch.in/quakespasm/data.zip" -O --output-dir src/assets/module
           npm install
           npm run build
       # todo: deploy dist folder to your server
